@@ -30,6 +30,11 @@ python3 trainer_s2d.py --region 'jeju'
 
 cuda version 12.1
 
+가상환경 새로 만들기
+````
+conda create -n 환경명 anaconda
+````
+
 torch 설치 
 ````
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
