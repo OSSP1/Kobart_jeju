@@ -1,5 +1,10 @@
 # Korean Dialect <-> Jeju Standard Translator
 
+## Web 예시
+
+<img width="938" alt="web" src="https://github.com/OSSP1/Kobart_jeju/assets/97430653/efa9719b-4de7-4436-83bf-254d48d6918a">
+
+
 ## How to train
 
 * hyperparameter
@@ -13,7 +18,6 @@ epochs = 10, gpus = 1, learning_rate = 2e-7, batch_size = 32
 ````
 python trainer_d2s.py
 ````
-* 훈련을 마친 후 모델이 model_results/d2s/model 에 저장됩니다.
 
 
 ### standard > dialect
@@ -21,13 +25,11 @@ python trainer_d2s.py
 ````
 python trainer_s2d.py
 ````
-* 훈련을 마친 후 모델이 model_results/2ds/model 에 저장됩니다.
 
 
 ## How to generate
 
 * inference_example.ipynb
-  * 생성과 스코어링 예시를 담고 있습니다.
 
 
 ## add.. 
