@@ -3,9 +3,10 @@
 ## How to train
 
 * hyperparameter
+* 1 epoch 당 약 1시간 30분 소요
   
 ```
-* epochs = 10, gpus = 1, learning_rate = 2e-7, batch_size = 32
+epochs = 10, gpus = 1, learning_rate = 2e-7, batch_size = 32
 ```
 ### dialect > standard
 
@@ -20,7 +21,7 @@ python trainer_d2s.py
 ````
 python trainer_s2d.py
 ````
-* 훈련을 마친 후 모델이 model_results/2ds/{region}/model 에 저장됩니다.
+* 훈련을 마친 후 모델이 model_results/2ds/model 에 저장됩니다.
 
 
 ## How to generate
