@@ -12,10 +12,15 @@ import logging
 import pytorch_lightning as pl
 from pytorch_lightning import loggers as pl_loggers
 from transformers import BartForConditionalGeneration, BartTokenizer, PreTrainedTokenizerFast, BartModel
-# from asian_bart import AsianBartTokenizer, AsianBartForConditionalGeneration
 from transformers.optimization import AdamW, get_cosine_schedule_with_warmup
-# from kobart import get_pytorch_kobart_model, get_kobart_tokenizer
+from kobart import get_pytorch_kobart_model, get_kobart_tokenizer
 # from torchtext.data.metrics import bleu_score
+
+# batch_size
+bs = 64
+# max_epoch 
+ep = 10
+
 
 class DialectDataset(Dataset):
     def __init__(self, file, tokenizer, max_len, pad_index = 0, ignore_index=-100):
@@ -63,10 +68,6 @@ class DialectDataset(Dataset):
         return {'input_ids': torch.tensor(input_ids, dtype=torch.long),
                 'decoder_input_ids': torch.tensor(dec_input_ids, dtype=torch.long),
                 'labels': torch.tensor(label_ids, dtype=torch.long)}
-
-        # return {'input_ids': np.array(input_ids, dtype=torch.long),
-        #         'decoder_input_ids': np.array(dec_input_ids, dtype=torch.long),
-        #         'labels': np.array(label_ids, dtype=torch.long)}
     
     def __len__(self):
         return self.len
@@ -75,7 +76,7 @@ class DialectDataModule(pl.LightningDataModule):
     def __init__(self, train_file,
                  test_file, tokenizer,
                  max_len=128,
-                 batch_size=8,
+                 batch_size=bs,
                  num_workers=4):
         super().__init__()
         self.batch_size = batch_size
@@ -85,7 +86,6 @@ class DialectDataModule(pl.LightningDataModule):
         self.tokenizer = tokenizer
         self.num_workers = num_workers
 
-    # OPTIONAL, called for every GPU/machine (assigning state is OK)
     def setup(self, stage):
         # split dataset
         self.train = DialectDataset(self.train_file_path,
@@ -129,12 +129,12 @@ class Base(pl.LightningModule):
                 nd in n for nd in no_decay)], 'weight_decay': 0.0}
         ]
         optimizer = AdamW(optimizer_grouped_parameters,
-                          lr=2e-5, correct_bias=False)
+                          lr=2e-7, correct_bias=False)
         # warm up lr
         num_workers = 4
         data_len = len(data_module.train)
         logging.info(f'number of workers {num_workers}, data length {data_len}')
-        num_train_steps = int(data_len / (16 * num_workers) * 3) # batch size, max epochs
+        num_train_steps = int(data_len / (bs * num_workers) * ep) # batch size, max epochs
         logging.info(f'num_train_steps : {num_train_steps}')
         num_warmup_steps = int(num_train_steps * 0.1) # warm up ratio
         logging.info(f'num_warmup_steps : {num_warmup_steps}')
@@ -149,10 +149,9 @@ class Base(pl.LightningModule):
 
 class DialectConvertor(Base):
     def __init__(self):
-#         super(self).__init__()
         super().__init__()
         self.tokenizer = tokenizer
-        self.model = BartForConditionalGeneration.from_pretrained('gogamza/kobart-base-v2')
+        self.model = BartForConditionalGeneration.from_pretrained(get_pytorch_kobart_model())
         self.model.resize_token_embeddings(len(tokenizer))
         self.model.train()
         self.bos_token = '<s>'
@@ -171,11 +170,6 @@ class DialectConvertor(Base):
                           decoder_input_ids=inputs['decoder_input_ids'],
                           decoder_attention_mask=decoder_attention_mask,
                           labels=inputs['labels'], return_dict=True)
-        # return self.model(input_ids=inputs['input_ids'],
-        #                   attention_mask=attention_mask,
-        #                   decoder_input_ids=inputs['decoder_input_ids'],
-        #                   decoder_attention_mask=decoder_attention_mask,
-        #                   labels=inputs['labels'], return_dict=True)
 
 
     def training_step(self, batch, batch_idx):
@@ -200,16 +194,9 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser(description='Dialect Machine Translation')
 
-    parser.add_argument('--region',
-                    type=str,
-                    default='jeju_tranlation',
-                    help='dialect region')
-
     args = parser.parse_args()
-
-    # cuda = torch.device('cuda')
     
-    tokenizer = PreTrainedTokenizerFast.from_pretrained('gogamza/kobart-base-v2')
+    tokenizer = get_kobart_tokenizer()
 
     data_module=DialectDataModule('data/train_cleaned.tsv',
                               'data/test_cleaned.tsv', tokenizer)
