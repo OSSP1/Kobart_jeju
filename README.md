@@ -2,7 +2,7 @@
 
 ## Web 예시
 
-<img width="938" alt="web" src="https://github.com/OSSP1/Kobart_jeju/assets/97430653/efa9719b-4de7-4436-83bf-254d48d6918a">
+<img width="800" alt="web" src="https://github.com/OSSP1/Kobart_jeju/assets/97430653/efa9719b-4de7-4436-83bf-254d48d6918a">
 
 
 ## How to train
